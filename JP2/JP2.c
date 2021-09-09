@@ -2,6 +2,10 @@
  * 	Source file for controlling General Purpose I/O Expansion
  * 		For: Embedded System Mini-Project
  * 		By:  Zhaonan Ma [el20z2m], SID: 201397999
+ *
+ * 	Ref:
+ *		DHT11 Manual, www.aosong.com
+ *		DHT11 Driver Code for STM32 (Chinese text), https://zhuanlan.zhihu.com/p/347904660
  */
 
 #include "JP2.h"
@@ -27,8 +31,8 @@ signed int JP2_initialise(unsigned int pio_base_address)
 	//set local base address pointers
 	jp2_pio_ptr = (unsigned int *) pio_base_address;
 	//initialise JP2 PIO direction
-	jp2_pio_ptr[JP2_PIO_DIR] = 0xFFFFFFFF;		//set all pins to 1, all outputs
-
+	jp2_pio_ptr[JP2_PIO_DIR] = 0xFFFFFFFF;		// set as outputs
+	jp2_pio_ptr[JP2_PIO_DATA] = 0xFFFFFFFF;		// set all pins to 1
 	jp2_initialised = true;
 	return JP2_SUCCESS;
 }
@@ -44,7 +48,57 @@ bool JP2_isInitialised()
 // 			0- invalid/ no response
 signed int JP2_RST()
 {
+	volatile unsigned int *jp2_ptr;
+	unsigned int timer = 0;
+	//sanity check
+	if (!JP2_isInitialised()) return JP2_ERRORNOINIT;
+	// give signal
+	jp2_ptr[JP2_PIO_DATA] = ~PIN1;	// set output as 0, start resetting
+	usleep(20000);					// maintain 0 for at least 18ms
+	jp2_ptr[JP2_PIO_DATA] = PIN1;	// back to 1, input signal finished
+	usleep(30);						// maintain for 20~40 us
+	// read feedback
+	jp2_ptr[JP2_PIO_DIR] = ~PIN1;	// set as input
+	while(!jp2_ptr[JP2_PIO_DATA])
+	{
+		timer++;						// count every 1 us
+		usleep(1);
+	}
+	if (timer > 88 || timer < 78) return 0;	// check 83 us low signal
+	timer = 0;
+	while(jp2_ptr[JP2_PIO_DATA])
+	{
+		timer++;
+		usleep(1);
+	}
+	if (timer > 92 || timer < 82) return 0;	// check 87 us high siganl
+	return 1;
+}
 
+// read one byte
+// each bit data comes after a 54 us low signal
+// bit 0: stay high for 23~27 us
+// bit 1: stay high for 68~74 us
+//
+// when data begins do 40 us delay then check the signal and so on
+// Ref:
+//		DHT11 Manual, www.aosong.com
+//		DHT11 Driver Code for STM32 (Chinese text), https://zhuanlan.zhihu.com/p/347904660
+unsigned int JP2_readByte()
+{
+	volatile unsigned int *jp2_ptr;
+	unsigned int i;
+	unsigned int byte = 0;
+	// sanity check takes place in JP2_RST()
+	for (i = 0; i < 8; i++)
+	{
+		while(jp2_ptr[JP2_PIO_DATA]);	// wait for the previous data to pass
+		while(!jp2_ptr[JP2_PIO_DATA]);	// wait for low signal to pass
+		usleep(40);
+		byte <<= 1;
+		if (jp2_ptr[JP2_PIO_DATA]) byte |= 0x01;	// read input value
+	}
+	return byte;
 }
 
 // read all the current pin values

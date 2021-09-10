@@ -27,4 +27,4 @@ signed int JP2_RST(void);
 unsigned int JP2_readByte(void);
 
 // read 40 bit data
-signed int JP2_readData(unsigned int *Temp, unsigned int *Humi);
+unsigned int JP2_readData(void);

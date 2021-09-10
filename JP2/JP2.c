@@ -56,8 +56,8 @@ signed int JP2_RST()
 	// give signal
 	jp2_ptr[JP2_PIO_DATA] = ~PIN1;	// set output as 0, start resetting
 	usleep(20000);					// maintain 0 for at least 18ms
-	jp2_ptr[JP2_PIO_DATA] = PIN1;	// back to 1, input signal finished
-	usleep(30);						// maintain for 20~40 us
+	//jp2_ptr[JP2_PIO_DATA] = PIN1;	// back to 1, input signal finished
+	//usleep(30);						// maintain for 20~40 us
 	// read feedback
 	jp2_ptr[JP2_PIO_DIR] = ~PIN1;	// set as input
 	while(!jp2_ptr[JP2_PIO_DATA])
@@ -109,10 +109,11 @@ unsigned int JP2_readByte()
 // the only function that gets called, sanity check takes place in JP2_RST()
 // return: 1 - valid, 0 - invalid
 //
-signed int JP2_readData(unsigned int *Temp, unsigned int *Humi)
+unsigned int JP2_readData()
 {
 	volatile unsigned int *jp2_ptr;
-	unsigned int status = 0;
+	unsigned int Temp = 0;
+	unsigned int Humi = 0;
 	unsigned int i;
 	unsigned int buff[5];	// store data of 5 bytes
 
@@ -122,19 +123,17 @@ signed int JP2_readData(unsigned int *Temp, unsigned int *Humi)
 		// validation
 		if (buff[0] + buff[1] + buff[2] + buff[3] == buff[4])
 		{
-			*Humi = buff[0];
-			*Temp = buff[2];
+			Humi = buff[0];
+			Temp = buff[2];
 		}
-		status = 1;
 	}
 	else
 	{
-		*Humi = 0xFF;
-		*Temp = 0xFF;
-		status = 0;
+		Humi = 0xFF;
+		Temp = 0xFF;
 	}
 	jp2_ptr[JP2_PIO_DIR] = PIN1;	// release bus, GPIO is output again
 	jp2_ptr[JP2_PIO_DATA] = PIN1;
-	return status;
+	return Temp;
 }
 

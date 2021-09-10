@@ -41,8 +41,8 @@ void exitOnFail(signed int status, signed int successStatus){
 int main(void)
 {
 	unsigned int keys_pressed	= 0;			//KEY information
-	unsigned int *Temp = 0;
-	unsigned int *Humi = 0;
+	unsigned int Temp = 0;
+	unsigned int Humi = 0;
 	//initialise JP2
 	exitOnFail(
 			JP2_initialise(0xFF200070),
@@ -53,13 +53,16 @@ int main(void)
 	//
 	//main procedure
 	//
-	//read key value every cycle
-	keys_pressed = getPressedKeys();
-	//check if leftmost key/KEY[3] is pressed
-	if (keys_pressed & 0x8)
+	while(1)
 	{
-		JP2_readData(Temp, Humi);
+		//read key value every cycle
+		keys_pressed = getPressedKeys();
+		//check if leftmost key/KEY[3] is pressed
+		if (keys_pressed & 0x8)
+		{
+			Temp = JP2_readData();
+		}
+		//finally reset the watchdog
+		HPS_ResetWatchdog();
 	}
-	//finally reset the watchdog
-	HPS_ResetWatchdog();
 }

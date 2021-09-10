@@ -23,4 +23,11 @@
 		<nature>org.eclipse.cdt.managedbuilder.core.managedBuildNature</nature>
 		<nature>org.eclipse.cdt.managedbuilder.core.ScannerConfigNature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>Drivers</name>
+			<type>2</type>
+			<location>C:/Users/Magnum/Workspace/ELEC5620M-Resources/Drivers</location>
+		</link>
+	</linkedResources>
 </projectDescription>

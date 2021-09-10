@@ -14,23 +14,43 @@
 				<configuration artifactExtension="axf" artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug" cleanCommand="clean" description="" id="com.arm.eclipse.build.config.baremetal.exe.debug.1523188536" name="Debug" parent="com.arm.eclipse.build.config.baremetal.exe.debug">
 					<folderInfo id="com.arm.eclipse.build.config.baremetal.exe.debug.1523188536." name="/" resourcePath="">
 						<toolChain id="com.arm.toolchain.baremetal.exe.debug.1651100132" name="ARM Compiler 5 (DS-5 built-in)" superClass="com.arm.toolchain.baremetal.exe.debug">
+							<option id="com.arm.toolchain.ac5.option.target.cpu_fpu.1530413733" superClass="com.arm.toolchain.ac5.option.target.cpu_fpu" value="Cortex-A9.NoFPU" valueType="string"/>
+							<option id="com.arm.toolchain.ac5.option.fppcs.610324556" superClass="com.arm.toolchain.ac5.option.fppcs" value="com.arm.tool.c.compiler.option.fppcs.auto" valueType="enumerated"/>
+							<option id="com.arm.toolchain.ac5.option.inst.805341230" superClass="com.arm.toolchain.ac5.option.inst" value="com.arm.tool.c.compiler.option.inst.arm" valueType="enumerated"/>
 							<targetPlatform id="com.arm.eclipse.build.config.baremetal.exe.debug.1523188536..1018879401" name=""/>
-							<builder buildPath="${workspace_loc:/Temp}/Debug" id="com.arm.toolchain.baremetal.builder.756187763" managedBuildOn="true" name="Gnu Make Builder.Debug" superClass="com.arm.toolchain.baremetal.builder"/>
+							<builder buildPath="${workspace_loc:/Temp}/Debug" id="com.arm.toolchain.baremetal.builder.756187763" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Gnu Make Builder" superClass="com.arm.toolchain.baremetal.builder"/>
 							<tool id="com.arm.tool.c.compiler.baremetal.exe.debug.42308784" name="ARM C Compiler 5" superClass="com.arm.tool.c.compiler.baremetal.exe.debug">
-								<option defaultValue="com.arm.tool.c.compiler.option.optlevel.min" id="com.arm.tool.c.compiler.baremetal.exe.debug.base.option.opt.126865770" superClass="com.arm.tool.c.compiler.baremetal.exe.debug.base.option.opt" useByScannerDiscovery="true" valueType="enumerated"/>
+								<option defaultValue="com.arm.tool.c.compiler.option.optlevel.min" id="com.arm.tool.c.compiler.baremetal.exe.debug.base.option.opt.126865770" name="Optimization level" superClass="com.arm.tool.c.compiler.baremetal.exe.debug.base.option.opt" useByScannerDiscovery="true" valueType="enumerated"/>
+								<option id="com.arm.tool.c.compiler.option.incpath.1699603063" name="Include path (-I)" superClass="com.arm.tool.c.compiler.option.incpath" useByScannerDiscovery="false" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Drivers}&quot;"/>
+								</option>
+								<option id="com.arm.tool.c.compiler.option.targetcpu.1692367698" superClass="com.arm.tool.c.compiler.option.targetcpu" value="Cortex-A9.no_neon.no_vfp" valueType="string"/>
+								<option id="com.arm.tool.c.compiler.option.fppcs.424445652" superClass="com.arm.tool.c.compiler.option.fppcs" value="com.arm.tool.c.compiler.option.fppcs.auto" valueType="enumerated"/>
+								<option id="com.arm.tool.c.compiler.option.inst.1092247617" superClass="com.arm.tool.c.compiler.option.inst" value="com.arm.tool.c.compiler.option.inst.arm" valueType="enumerated"/>
 								<inputType id="com.arm.tool.c.compiler.input.474397832" superClass="com.arm.tool.c.compiler.input"/>
 								<inputType id="com.arm.tool.cpp.compiler.input.2129559774" superClass="com.arm.tool.cpp.compiler.input"/>
 							</tool>
 							<tool id="com.arm.tool.cpp.compiler.baremetal.exe.debug.916087288" name="ARM C++ Compiler 5" superClass="com.arm.tool.cpp.compiler.baremetal.exe.debug">
-								<option defaultValue="com.arm.tool.c.compiler.option.optlevel.min" id="com.arm.tool.cpp.compiler.baremetal.exe.debug.base.option.opt.2013240593" superClass="com.arm.tool.cpp.compiler.baremetal.exe.debug.base.option.opt" valueType="enumerated"/>
+								<option defaultValue="com.arm.tool.c.compiler.option.optlevel.min" id="com.arm.tool.cpp.compiler.baremetal.exe.debug.base.option.opt.2013240593" name="Optimization level" superClass="com.arm.tool.cpp.compiler.baremetal.exe.debug.base.option.opt" valueType="enumerated"/>
 							</tool>
 							<tool id="com.arm.tool.assembler.1150339656" name="ARM Assembler 5" superClass="com.arm.tool.assembler">
+								<option id="com.arm.tool.assembler.option.cpu.143285948" superClass="com.arm.tool.assembler.option.cpu" value="Cortex-A9.no_neon.no_vfp" valueType="string"/>
+								<option id="com.arm.tool.assembler.option.fppcs.777834824" superClass="com.arm.tool.assembler.option.fppcs" value="com.arm.tool.c.compiler.option.fppcs.auto" valueType="enumerated"/>
+								<option id="com.arm.tool.assembler.option.inst.200174055" superClass="com.arm.tool.assembler.option.inst" value="com.arm.tool.c.compiler.option.inst.arm" valueType="enumerated"/>
 								<inputType id="com.arm.tool.assembler.input.1120859876" superClass="com.arm.tool.assembler.input"/>
 							</tool>
-							<tool id="com.arm.tool.c.linker.472848242" name="ARM Linker 5" superClass="com.arm.tool.c.linker"/>
+							<tool id="com.arm.tool.c.linker.472848242" name="ARM Linker 5" superClass="com.arm.tool.c.linker">
+								<option id="com.arm.tool.c.linker.option.cpu.201114717" superClass="com.arm.tool.c.linker.option.cpu" value="Cortex-A9.no_neon.no_vfp" valueType="string"/>
+								<option id="com.arm.tool.c.linker.option.entry.1623345672" superClass="com.arm.tool.c.linker.option.entry" value="__main" valueType="string"/>
+								<option id="com.arm.tool.c.linker.option.scatter.731854817" superClass="com.arm.tool.c.linker.option.scatter" value="${workspace_loc}\ELEC5620M-Resources\ScatterFiles\FPGARomRam.scat" valueType="string"/>
+							</tool>
 							<tool id="com.arm.tool.librarian.159786659" name="ARM Librarian 5" superClass="com.arm.tool.librarian"/>
 						</toolChain>
 					</folderInfo>
+					<sourceEntries>
+						<entry excluding="Drivers" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Drivers"/>
+					</sourceEntries>
 				</configuration>
 			</storageModule>
 			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
@@ -44,4 +64,9 @@
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
 	<storageModule moduleId="com.arm.projectSettings" version="5.25"/>
+	<storageModule moduleId="refreshScope" versionNumber="2">
+		<configuration configurationName="Debug">
+			<resource resourceType="PROJECT" workspacePath="/Temp"/>
+		</configuration>
+	</storageModule>
 </cproject>

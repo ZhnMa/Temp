@@ -114,7 +114,7 @@ signed int JP2_readData(unsigned int *Temp, unsigned int *Humi)
 	volatile unsigned int *jp2_ptr;
 	unsigned int status = 0;
 	unsigned int i;
-	unsigned int buff[5]	// store data of 5 bytes
+	unsigned int buff[5];	// store data of 5 bytes
 
 	if (JP2_RST())	// check input validity
 	{
@@ -133,7 +133,8 @@ signed int JP2_readData(unsigned int *Temp, unsigned int *Humi)
 		*Temp = 0xFF;
 		status = 0;
 	}
-	jp2_ptr[JP2_PIO_DIR] = 0xFFFFFFFF;	// release bus, GPIO is output again
+	jp2_ptr[JP2_PIO_DIR] = PIN1;	// release bus, GPIO is output again
+	jp2_ptr[JP2_PIO_DATA] = PIN1;
 	return status;
 }
 

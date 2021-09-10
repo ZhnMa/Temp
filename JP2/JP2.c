@@ -43,6 +43,7 @@ bool JP2_isInitialised()
 	return jp2_initialised;
 }
 
+//
 // DHT11 Reset and Check
 // return: 1 - valid response
 // 			0- invalid/ no response
@@ -75,6 +76,7 @@ signed int JP2_RST()
 	return 1;
 }
 
+//
 // read one byte
 // each bit data comes after a 54 us low signal
 // bit 0: stay high for 23~27 us
@@ -84,6 +86,7 @@ signed int JP2_RST()
 // Ref:
 //		DHT11 Manual, www.aosong.com
 //		DHT11 Driver Code for STM32 (Chinese text), https://zhuanlan.zhihu.com/p/347904660
+//
 unsigned int JP2_readByte()
 {
 	volatile unsigned int *jp2_ptr;
@@ -101,73 +104,36 @@ unsigned int JP2_readByte()
 	return byte;
 }
 
-// read all the current pin values
-signed int JP2_readValue()
+//
+// read all 40 bit data
+// the only function that gets called, sanity check takes place in JP2_RST()
+// return: 1 - valid, 0 - invalid
+//
+signed int JP2_readData(unsigned int *Temp, unsigned int *Humi)
 {
 	volatile unsigned int *jp2_ptr;
-	unsigned int KEY1 = 0x0000;
-	unsigned int KEY2 = 0x0000;
-	unsigned int KEY3 = 0x0000;
-	unsigned int KEY4 = 0x0000;
-	unsigned int KEY = 0x0000;
-	//sanity check
-	if (!JP2_isInitialised()) return JP2_ERRORNOINIT;
-	//configure value register
-	jp2_ptr = (unsigned int *) jp2_pio_ptr;
-	//do the scanning, find out which key(s) pressed
-	KEY1 = JP2_oneScan(PIN1);
-	usleep(1000);				//there needs to be a time delay!
-	KEY2 = JP2_oneScan(PIN2);
-	usleep(1000);
-	KEY3 = JP2_oneScan(PIN3);
-	usleep(1000);
-	KEY4 = JP2_oneScan(PIN4);
-	usleep(1000);
-	KEY = (KEY1 | KEY2 | KEY3 | KEY4);
-	return KEY;
-}
+	unsigned int status = 0;
+	unsigned int i;
+	unsigned int buff[5]	// store data of 5 bytes
 
-//scan only one pin
-unsigned int JP2_oneScan(unsigned int pin)
-{
-	volatile unsigned int *jp2_ptr;
-	unsigned int JP2_VALUE = 0xFFFFFFFF;
-	unsigned int key = 0x0000;
-	//configure register
-	jp2_ptr = (unsigned int *) jp2_pio_ptr;
-	//do the scanning
-	jp2_ptr[JP2_PIO_DIR] = pin;
-	//jp2_ptr[JP2_PIO_DATA] = pin;		// not needed
-	JP2_VALUE = ~(jp2_ptr[JP2_PIO_DATA] | HALF_PIN);	// read inverted pin data, 1 is on, 0 is off
-	jp2_ptr[JP2_PIO_DIR] = 0x00000000;
-
-	switch (pin) {
-	case PIN1: {	// 4th column
-		if (JP2_VALUE & PIN5) key = key | 0x8;
-		if (JP2_VALUE & PIN6) key = key | 0x80;
-		if (JP2_VALUE & PIN7) key = key | 0x800;
-		if (JP2_VALUE & PIN8) key = key | 0x8000;
-	} break;
-	case PIN2: {	// 3rd column
-		if (JP2_VALUE & PIN5) key = key | 0x4;
-		if (JP2_VALUE & PIN6) key = key | 0x40;
-		if (JP2_VALUE & PIN7) key = key | 0x400;
-		if (JP2_VALUE & PIN8) key = key | 0x4000;
-	} break;
-	case PIN3: {	// 2nd column
-		if (JP2_VALUE & PIN5) key = key | 0x2;
-		if (JP2_VALUE & PIN6) key = key | 0x20;
-		if (JP2_VALUE & PIN7) key = key | 0x200;
-		if (JP2_VALUE & PIN8) key = key | 0x2000;
-	} break;
-	case PIN4: {	// 1st column
-		if (JP2_VALUE & PIN5) key = key | 0x1;
-		if (JP2_VALUE & PIN6) key = key | 0x10;
-		if (JP2_VALUE & PIN7) key = key | 0x100;
-		if (JP2_VALUE & PIN8) key = key | 0x1000;
-	} break;
-	default: key = 0x0000;
+	if (JP2_RST())	// check input validity
+	{
+		for (i = 0; i < 5; i++)	buff[i] = JP2_readByte();	// read 5 bytes, 40 bits
+		// validation
+		if (buff[0] + buff[1] + buff[2] + buff[3] == buff[4])
+		{
+			*Humi = buff[0];
+			*Temp = buff[2];
+		}
+		status = 1;
 	}
-
-	return key;
+	else
+	{
+		*Humi = 0xFF;
+		*Temp = 0xFF;
+		status = 0;
+	}
+	jp2_ptr[JP2_PIO_DIR] = 0xFFFFFFFF;	// release bus, GPIO is output again
+	return status;
 }
+

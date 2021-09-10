@@ -1,6 +1,6 @@
 /*
  * Header file for GPIO1/JP2 driver, contains function declarations
- * 	For: Mini-Project
+ * 	For: Individual Project
  * 	By: Zhaonan Ma [el20z2m] SID: 201397999
  *
  */
@@ -18,13 +18,13 @@
 signed int JP2_initialise(unsigned int pio_base_address);
 
 // Check if driver intialised
-bool Timer_isInitialised(void);
+bool JP2_isInitialised(void);
 
-// read the current pin value
-signed int JP2_readValue(void);
+// reset and check the sensor
+signed int JP2_RST(void);
 
-//scan only one pin
-unsigned int JP2_oneScan(unsigned int pin);
+// read one byte data
+unsigned int JP2_readByte(void);
 
-//read one value
-signed int JP2_readOneValue(void);
+// read 40 bit data
+signed int JP2_readData(unsigned int *Temp, unsigned int *Humi);

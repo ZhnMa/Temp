@@ -68,14 +68,14 @@ signed int JP2_RST()
 		timer++;						// count every 1 us
 		usleep(1);
 	}
-	if (timer > 88 || timer < 48) return 0;	// check 83 us low signal
+	if (timer > 88 || timer < 8) return 0;	// check 83 us low signal
 	timer = 0;
 	while((jp2_ptr[JP2_PIO_DATA] & PIN1))
 	{
 		timer++;
 		usleep(1);
 	}
-	if (timer > 92 || timer < 52) return 0;	// check 87 us high siganl
+	if (timer > 92 || timer < 5) return 0;	// check 87 us high siganl
 	return 1;
 }
 

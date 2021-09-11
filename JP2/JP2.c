@@ -31,8 +31,8 @@ signed int JP2_initialise(unsigned int pio_base_address)
 	//set local base address pointers
 	jp2_pio_ptr = (unsigned int *) pio_base_address;
 	//initialise JP2 PIO direction
-	jp2_pio_ptr[JP2_PIO_DIR] = 0xFFFFFFFF;		// set as outputs
-	jp2_pio_ptr[JP2_PIO_DATA] = 0xFFFFFFFF;		// set all pins to 1
+	//jp2_pio_ptr[JP2_PIO_DIR] = 0xFFFFFFFF;		// set as outputs
+	//jp2_pio_ptr[JP2_PIO_DATA] = 0xFFFFFFFF;		// set all pins to 1
 	jp2_initialised = true;
 	return JP2_SUCCESS;
 }
@@ -51,28 +51,31 @@ signed int JP2_RST()
 {
 	volatile unsigned int *jp2_ptr;
 	unsigned int timer = 0;
-	//sanity check
-	if (!JP2_isInitialised()) return JP2_ERRORNOINIT;
+	// sanity check takes place in JP2_readData()
+	// configure value register
+	jp2_ptr = (unsigned int *) jp2_pio_ptr;
 	// give signal
-	jp2_ptr[JP2_PIO_DATA] = ~PIN1;	// set output as 0, start resetting
+//	jp2_ptr[JP2_PIO_DATA] = ~PIN1;	// set output as 0, start resetting
+	jp2_ptr[JP2_PIO_DIR] = PIN1;	// set pin1 as output, export 0
 	usleep(20000);					// maintain 0 for at least 18ms
 	//jp2_ptr[JP2_PIO_DATA] = PIN1;	// back to 1, input signal finished
 	//usleep(30);						// maintain for 20~40 us
 	// read feedback
 	jp2_ptr[JP2_PIO_DIR] = ~PIN1;	// set as input
-	while(!jp2_ptr[JP2_PIO_DATA])
+	usleep(30);
+	while(!(jp2_ptr[JP2_PIO_DATA] & PIN1))
 	{
 		timer++;						// count every 1 us
 		usleep(1);
 	}
-	if (timer > 88 || timer < 78) return 0;	// check 83 us low signal
+	if (timer > 88 || timer < 48) return 0;	// check 83 us low signal
 	timer = 0;
-	while(jp2_ptr[JP2_PIO_DATA])
+	while((jp2_ptr[JP2_PIO_DATA] & PIN1))
 	{
 		timer++;
 		usleep(1);
 	}
-	if (timer > 92 || timer < 82) return 0;	// check 87 us high siganl
+	if (timer > 92 || timer < 52) return 0;	// check 87 us high siganl
 	return 1;
 }
 
@@ -92,30 +95,36 @@ unsigned int JP2_readByte()
 	volatile unsigned int *jp2_ptr;
 	unsigned int i;
 	unsigned int byte = 0;
-	// sanity check takes place in JP2_RST()
+	// sanity check takes place in JP2_readData()
+	//configure value register
+	jp2_ptr = (unsigned int *) jp2_pio_ptr;
 	for (i = 0; i < 8; i++)
 	{
-		while(jp2_ptr[JP2_PIO_DATA]);	// wait for the previous data to pass
-		while(!jp2_ptr[JP2_PIO_DATA]);	// wait for low signal to pass
+		while((jp2_ptr[JP2_PIO_DATA] & PIN1));	// wait for the previous data to pass
+		while(!(jp2_ptr[JP2_PIO_DATA] & PIN1));	// wait for low signal to pass
 		usleep(40);
 		byte <<= 1;
-		if (jp2_ptr[JP2_PIO_DATA]) byte |= 0x01;	// read input value
+		if ((jp2_ptr[JP2_PIO_DATA] & PIN1)) byte |= 0x1;	// read input value
 	}
 	return byte;
 }
 
 //
 // read all 40 bit data
-// the only function that gets called, sanity check takes place in JP2_RST()
+// the only function that gets called, sanity check takes place
 // return: 1 - valid, 0 - invalid
 //
 unsigned int JP2_readData()
 {
 	volatile unsigned int *jp2_ptr;
-	unsigned int Temp = 0;
 	unsigned int Humi = 0;
+	unsigned int Temp = 0;
 	unsigned int i;
 	unsigned int buff[5];	// store data of 5 bytes
+	//sanity check
+	if (!JP2_isInitialised()) return JP2_ERRORNOINIT;
+	//configure value register
+	jp2_ptr = (unsigned int *) jp2_pio_ptr;
 
 	if (JP2_RST())	// check input validity
 	{
@@ -132,8 +141,8 @@ unsigned int JP2_readData()
 		Humi = 0xFF;
 		Temp = 0xFF;
 	}
-	jp2_ptr[JP2_PIO_DIR] = PIN1;	// release bus, GPIO is output again
-	jp2_ptr[JP2_PIO_DATA] = PIN1;
+	//jp2_ptr[JP2_PIO_DIR] = PIN1;	// release bus, GPIO is output again
+	//jp2_ptr[JP2_PIO_DATA] = PIN1;
 	return Temp;
 }
 

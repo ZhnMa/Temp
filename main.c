@@ -41,6 +41,7 @@ void exitOnFail(signed int status, signed int successStatus){
 int main(void)
 {
 	unsigned int keys_pressed	= 0;			//KEY information
+	unsigned int Data = 0;
 	unsigned int Temp = 0;
 	unsigned int Humi = 0;
 	//initialise JP2

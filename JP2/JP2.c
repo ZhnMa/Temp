@@ -116,15 +116,12 @@ unsigned int JP2_readByte()
 //
 unsigned int JP2_readData()
 {
-	volatile unsigned int *jp2_ptr;
 	unsigned int Humi = 0;
 	unsigned int Temp = 0;
 	unsigned int i;
 	unsigned int buff[5];	// store data of 5 bytes
 	//sanity check
 	if (!JP2_isInitialised()) return JP2_ERRORNOINIT;
-	//configure value register
-	jp2_ptr = (unsigned int *) jp2_pio_ptr;
 
 	if (JP2_RST())	// check input validity
 	{
@@ -143,6 +140,6 @@ unsigned int JP2_readData()
 	}
 	//jp2_ptr[JP2_PIO_DIR] = PIN1;	// release bus, GPIO is output again
 	//jp2_ptr[JP2_PIO_DATA] = PIN1;
-	return Temp;
+	return (Humi << 8) + Temp;
 }
 

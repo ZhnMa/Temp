@@ -1,7 +1,7 @@
 /*
  * 	Source file for controlling General Purpose I/O Expansion
- * 		For: Embedded System Mini-Project
- * 		By:  Zhaonan Ma [el20z2m], SID: 201397999
+ * 		For: Individual Project, DHT sensor
+ * 		By:  Zhaonan Ma el20z2m@leeds.ac.uk
  *
  * 	Ref:
  *		DHT11 Manual, www.aosong.com
@@ -143,3 +143,14 @@ unsigned int JP2_readData()
 	return (Humi << 8) + Temp;
 }
 
+//
+// read real time data
+// DHT11 only returns the previous data, current data needs to be read 2s later
+// a 2-second delay is applied
+//
+unsigned int JP2_rtData()
+{
+	// stimulate sensor twice
+	if (JP2_RST()) usleep(2000000);	// delay 2 seconds
+	return JP2_readData();
+}

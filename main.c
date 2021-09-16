@@ -60,13 +60,18 @@ int main(void)
 		//read key value every cycle
 		keys_pressed = getPressedKeys();
 		//check if leftmost key/KEY[3] is pressed
-		if (keys_pressed & 0x8)
-		{
-			Data = JP2_readData();
-			Temp = Data & 0x00FF;
-			Humi = (Data & 0xFF00) >> 8;
-			i++;
-		}
+//		if (keys_pressed & 0x8)
+//		{
+//			Data = JP2_rtData();
+//			Temp = Data & 0x00FF;
+//			Humi = (Data & 0xFF00) >> 8;
+//			i++;
+//		}
+		Data = JP2_rtData();
+		Temp = Data & 0x00FF;
+		Humi = (Data & 0xFF00) >> 8;
+		if (Temp != 0xFF && Humi != 0xFF) {
+		printf("Temperature:%d, Humidity:%d\n", Temp, Humi);}
 		//finally reset the watchdog
 		HPS_ResetWatchdog();
 	}

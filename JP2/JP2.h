@@ -28,3 +28,8 @@ unsigned int JP2_readByte(void);
 
 // read 40 bit data
 unsigned int JP2_readData(void);
+
+//
+// read real time data
+//
+unsigned int JP2_rtData(void);

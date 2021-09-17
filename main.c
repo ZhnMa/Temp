@@ -71,7 +71,10 @@ int main(void)
 		Temp = Data & 0x00FF;
 		Humi = (Data & 0xFF00) >> 8;
 		if (Temp != 0xFF && Humi != 0xFF) {
-		printf("Temperature:%d, Humidity:%d\n", Temp, Humi);}
+			DE1SoC_SevenSeg_SetDoubleDec(0, Temp);
+			DE1SoC_SevenSeg_SetDoubleDec(4, Humi);
+//			printf("Temperature:%d, Humidity:%d\n", Temp, Humi);
+		}
 		//finally reset the watchdog
 		HPS_ResetWatchdog();
 	}

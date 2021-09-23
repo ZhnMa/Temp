@@ -11,6 +11,7 @@
 #include "JP2/JP2.h"
 #include "HPS_Watchdog/HPS_Watchdog.h"
 #include "DE1SoC_SevenSeg/DE1SoC_SevenSeg.h"
+#include "HPS_usleep/HPS_usleep.h"
 
 // Peripheral/KEY base address.
 volatile unsigned int *key_ptr = (unsigned int *)0xFF200050;
@@ -67,7 +68,8 @@ int main(void)
 //			Humi = (Data & 0xFF00) >> 8;
 //			i++;
 //		}
-		Data = JP2_rtData();
+		usleep(2000000);
+		Data = JP2_readData();
 		Temp = Data & 0x00FF;
 		Humi = (Data & 0xFF00) >> 8;
 		if (Temp != 0xFF && Humi != 0xFF) {

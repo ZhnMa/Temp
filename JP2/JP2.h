@@ -21,7 +21,7 @@ signed int JP2_initialise(unsigned int pio_base_address);
 bool JP2_isInitialised(void);
 
 // reset and check the sensor
-signed int JP2_RST(void);
+unsigned int JP2_RST(void);
 
 // read one byte data
 unsigned int JP2_readByte(void);

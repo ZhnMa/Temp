@@ -69,7 +69,7 @@ int main(void)
 //			i++;
 //		}
 		usleep(2000000);
-		Data = JP2_readData();
+		Data = JP2_readData(PIN1);
 		Temp = Data & 0x00FF;
 		Humi = (Data & 0xFF00) >> 8;
 		if (Temp != 0xFF && Humi != 0xFF) {

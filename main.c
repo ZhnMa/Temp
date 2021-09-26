@@ -48,9 +48,8 @@ void exitOnFail(signed int status, signed int successStatus){
 // main
 int main(void)
 {
-
 	// file system
-	FILE *fp = fopen("/data/data.pkl", "wb");
+	FILE *fp;
 	unsigned int keys_pressed	= 0;			//KEY information
 	unsigned short Data16;
 	unsigned int Data32;
@@ -74,8 +73,8 @@ int main(void)
 		//read key value every cycle
 		keys_pressed = getPressedKeys();
 		//check if leftmost key/KEY[3] is pressed
-//		if (keys_pressed & 0x8)
-//		{
+		if (keys_pressed & 0x8)
+		{
 //			Data = JP2_rtData();
 //			Temp = Data & 0x00FF;
 //			Humi = (Data & 0xFF00) >> 8;
@@ -83,12 +82,18 @@ int main(void)
 //
 		for (i = 0; i < 5; i++) {
 			if (JP2_RST(Pin[i])) {
-				Data16 = JP2_16Bits(Pin[i]);
+				Data32 = JP2_readByte(Pin[i]);
+				// process, leave 16 bit valid data
+				Data32 &= 0xFF00FF00;
+				Data32 >>= 8;
+				Data32 += (Data32 >> 8);
+				fp = fopen("/data/data.pkl", "wb");
 				fputc(Data16, fp);
-			}
+				fclose(fp);
+			} else printf("stop\n");
 
 		}
-
+		}
 //		Temp = Data & 0x00FF;
 //		Humi = (Data & 0xFF00) >> 8;
 //		if (Temp != 0xFF && Humi != 0xFF) {

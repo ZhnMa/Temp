@@ -30,7 +30,7 @@ signed int JP2_initialise(unsigned int pio_base_address)
 	//set local base address pointers
 	jp2_pio_ptr = (unsigned int *) pio_base_address;
 	//initialise JP2 PIO direction
-	//jp2_pio_ptr[JP2_PIO_DIR] = 0xFFFFFFFF;		// set as outputs
+	jp2_pio_ptr[JP2_PIO_DIR] = 0x00000000;		// set as inputs
 	jp2_initialised = true;
 	return JP2_SUCCESS;
 }
@@ -62,7 +62,7 @@ signed int JP2_RST(unsigned int pin)
 	jp2_ptr[JP2_PIO_DIR] = pin;	// set potential pins as output, export 0
 	usleep(20000);						// maintain 0 for at least 18ms
 	// read feedback
-	jp2_ptr[JP2_PIO_DIR] = ~pin;	// set as input
+	jp2_ptr[JP2_PIO_DIR] = 0x00000000;	// set as input
 	usleep(25);							// maintain for 20~40 us
 
 	// check validity, exact pins
@@ -70,6 +70,7 @@ signed int JP2_RST(unsigned int pin)
 	{
 		timer++;							// count every 1 us
 		usleep(1);
+		if (timer > 100) break;
 	}
 	if (timer > 58 || timer < 8) return 0;	// check 83 us low signal
 	timer = 0;
@@ -77,6 +78,7 @@ signed int JP2_RST(unsigned int pin)
 	{
 		timer++;
 		usleep(1);
+		if (timer > 100) break;
 	}
 
 	if (timer > 42 || timer < 5) return 0;	// check 87 us high siganl
@@ -117,43 +119,25 @@ unsigned int JP2_readByte(unsigned int pin)
 			if ((jp2_ptr[JP2_PIO_DATA] & pin)) byte |= 0x1;	// read input value
 		}
 		buff[j] = byte;
+		byte = 0;
 	}
+	jp2_pio_ptr[JP2_PIO_DIR] = 0x00000000;
 	if (buff[0] + buff[1] + buff[2] + buff[3] == buff[4]) {
 	return (buff[0] << 24) + (buff[1] << 16) + (buff[2] << 8) + buff[3];}
 	else return 0;
 }
 
 //
-// read all 40 bit data
-// the only function that gets called, sanity check takes place
-// return: 1 - valid, 0 - invalid
-//
-//unsigned int JP2_readData(unsigned int pin)
-//{
-//	unsigned int Humi = 0;
-//	unsigned int Temp = 0;
-//	unsigned int i;
-//	unsigned int buff[5];	// store data of 5 bytes
-//
-//	for (i = 0; i < 5; i++)	buff[i] = JP2_readByte(pin);	// read 5 bytes, 40 bits
-//	// validation
-//	if (buff[0] + buff[1] + buff[2] + buff[3] == buff[4]) {
-//		return (buff[0] << 24) + (buff[1] << 16) + (buff[2] << 8) + buff[3];}
-//	//jp2_ptr[JP2_PIO_DIR] = PIN1;	// release bus, GPIO is output again
-//	//jp2_ptr[JP2_PIO_DATA] = PIN1;
-//}
-
-//
 // read real time data
 // DHT11 only returns the previous data, current data needs to be read 2s later
 // a 2-second delay is applied
 //
-unsigned int JP2_rtData(unsigned int pin)
-{
-	// stimulate sensor twice
-	if (JP2_RST(pin)) usleep(2000000);	// delay 2 seconds
-	return JP2_readData(pin);
-}
+//unsigned int JP2_rtData(unsigned int pin)
+//{
+//	// stimulate sensor twice
+//	if (JP2_RST(pin)) usleep(2000000);	// delay 2 seconds
+//	return JP2_readData(pin);
+//}
 
 //
 // function designed to deal with 16 bit output only

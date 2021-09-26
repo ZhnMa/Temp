@@ -16,8 +16,8 @@
 #define PIN1 (1 << 9)		// DHT11 data input
 	// potential extra inputs
 #define PIN2 (1 << 11)
-#define PIN3 (1 << 12)
-#define PIN4 (1 << 13)
+#define PIN3 (1 << 13)
+#define PIN4 (1 << 14)
 #define PIN_MASK (PIN1 | PIN2 | PIN3 | PIN4)
 
 //function declarations
@@ -33,9 +33,6 @@ signed int JP2_RST(unsigned int pin);
 // read one byte data
 unsigned int JP2_readByte(unsigned int pin);
 
-// read 40 bit data
-//unsigned int JP2_readData(unsigned int pin);
-
 //
 // read real time data
 //
@@ -50,3 +47,10 @@ unsigned int JP2_rtData(unsigned int pin);
 //						2 - 32 bits
 //
 //unsigned int JP2_fullScan(unsigned short bits);
+
+//
+// function designed to deal with 16 bit output only
+//		must not be called under other conditions
+// unsigned int pin: define input pin
+//
+unsigned short JP2_16Bits(unsigned int pin, bool deci);

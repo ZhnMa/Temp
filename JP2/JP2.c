@@ -16,17 +16,13 @@ volatile unsigned int *jp2_pio_ptr = 0x0;	//0xFF200070
 //Driver initialised
 bool jp2_initialised = false;
 
-// bit map
-#define PIN1 (1 << 9)		// DHT11 data input
-	// potential extra inputs
-#define PIN2 (1 << 11)
-#define PIN3 (1 << 12)
-#define PIN4 (1 << 13)
-#define PIN_MASK (PIN1 | PIN2 | PIN3 | PIN4)
-
 // address offsets
 #define JP2_PIO_DIR	 (0x04/sizeof(unsigned int))
 #define JP2_PIO_DATA (0x00/sizeof(unsigned int))		//read data
+
+// whether a priority is allowed
+// 	set this to zero if no priority is needed, might output invalid data
+#define PRIO 1
 
 // initialise
 signed int JP2_initialise(unsigned int pio_base_address)
@@ -160,21 +156,58 @@ unsigned int JP2_rtData(unsigned int pin)
 }
 
 //
+// function designed to deal with 16 bit output only
+//		must not be called under other conditions
+// unsigned int pin: define input pin
+//
+unsigned short JP2_16Bits(unsigned int pin, bool deci)
+{
+	unsigned int data = JP2_readByte(pin);
+	if (deci) {
+		if (PRIO) data >>= 16;	// return only temperature with decimals under PRIORITY
+		else return 0xFFFFFFFF;	// no priority allowed, out of range
+	}
+	else {
+		// process, leave 16 bit valid data
+		data &= 0xFF00FF00;
+		data >>= 8;
+		data += (data >> 8);
+	}
+	return data;
+}
+
+//
 // Scan all the pins
 // get valid data further process
 //
-// unsigned int bits: define how many bits of data to return
+// unsigned short bits: define how many bits of data to return
 // 						1 - 16 bits
 //						2 - 32 bits
 //
-unsigned int JP2_fullScan(unsigned short bits)
-{
-	unsigned int data = 0;
-	if (bits == 1)
-	{
-		while (data == 0xFFFFFFFF) {
-			data = JP2_readData(PIN1);
-		}
-	}
-}
+// bool deci: define whether the decimals are needed
+//						1 - yes
+//						0 - no
+//
+//unsigned int JP2_fullScan(unsigned short bits, bool deci)
+//{
+//	unsigned int data = 0;
+//	unsigned short validPin = 0;
+//	if (bits == 1)	// only need 16 bit data
+//	{
+//		// scan each pin to check valid correspond
+//		// ToDo: pretty shit, make sure multiple valid inputs work
+//		if (JP2_RST(PIN1)) {
+//			if (!validPin) {
+//				data = JP2_16Bits(PIN1, deci);
+//				validPin++;
+//			} else {
+//
+//			}
+//		}
+//		else if (JP2_RST(PIN2)) data = JP2_16Bits(PIN2, deci);
+//		else if (JP2_RST(PIN3)) data = JP2_16Bits(PIN3, deci);
+//		else if (JP2_RST(PIN4)) data = JP2_16Bits(PIN4, deci);
+//
+//	}
+//}
 

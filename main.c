@@ -8,10 +8,17 @@
 
 
 // header files
+#include <stdio.h>
+#include <stdlib.h>
 #include "JP2/JP2.h"
 #include "HPS_Watchdog/HPS_Watchdog.h"
 #include "DE1SoC_SevenSeg/DE1SoC_SevenSeg.h"
 #include "HPS_usleep/HPS_usleep.h"
+
+// define features
+// ToDo: set these to be controlled by switches
+#define BITS 1	// 16 bits
+#define DECI 0	// no decimal points
 
 // Peripheral/KEY base address.
 volatile unsigned int *key_ptr = (unsigned int *)0xFF200050;
@@ -41,9 +48,16 @@ void exitOnFail(signed int status, signed int successStatus){
 // main
 int main(void)
 {
+
+	// file system
+	FILE *fp = fopen("/data/data.pkl", "wb");
 	unsigned int keys_pressed	= 0;			//KEY information
-	unsigned int Data = 0;
+	unsigned short Data16;
+	unsigned int Data32;
+	unsigned int Pin[4] = {PIN1, PIN2, PIN3, PIN4};
 	unsigned int i = 0;
+	unsigned int Temp = 0;
+	unsigned int Humi = 0;
 	//initialise JP2
 	exitOnFail(
 			JP2_initialise(0xFF200070),
@@ -56,8 +70,7 @@ int main(void)
 	//
 	while(1)
 	{
-		unsigned int Temp = 0;
-		unsigned int Humi = 0;
+
 		//read key value every cycle
 		keys_pressed = getPressedKeys();
 		//check if leftmost key/KEY[3] is pressed
@@ -67,16 +80,22 @@ int main(void)
 //			Temp = Data & 0x00FF;
 //			Humi = (Data & 0xFF00) >> 8;
 //			i++;
-//		}
-		usleep(2000000);
-		Data = JP2_readData(PIN1);
-		Temp = Data & 0x00FF;
-		Humi = (Data & 0xFF00) >> 8;
-		if (Temp != 0xFF && Humi != 0xFF) {
-			DE1SoC_SevenSeg_SetDoubleDec(0, Temp);
-			DE1SoC_SevenSeg_SetDoubleDec(4, Humi);
-//			printf("Temperature:%d, Humidity:%d\n", Temp, Humi);
+//
+		for (i = 0; i < 5; i++) {
+			if (JP2_RST(Pin[i])) {
+				Data16 = JP2_16Bits(Pin[i]);
+				fputc(Data16, fp);
+			}
+
 		}
+
+//		Temp = Data & 0x00FF;
+//		Humi = (Data & 0xFF00) >> 8;
+//		if (Temp != 0xFF && Humi != 0xFF) {
+//			DE1SoC_SevenSeg_SetDoubleDec(0, Temp);
+//			DE1SoC_SevenSeg_SetDoubleDec(4, Humi);
+//			printf("Temperature:%d, Humidity:%d\n", Temp, Humi);
+//		}
 		//finally reset the watchdog
 		HPS_ResetWatchdog();
 	}

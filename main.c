@@ -78,7 +78,7 @@ int main(void)
 		keys_pressed = getPressedKeys();
 
 		fp = fopen("/Temp/data/data32.txt", "wb");
-		if (*sw_ptr & 0x1)
+		while (*sw_ptr & 0x1)
 		{
 //			Data = JP2_rtData();
 //			Temp = Data & 0x00FF;
@@ -98,6 +98,7 @@ int main(void)
 			} else printf("stop\n");
 
 		}
+		HPS_ResetWatchdog();
 		}
 		fclose(fp);
 //		Temp = Data & 0x00FF;

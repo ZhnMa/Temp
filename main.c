@@ -22,6 +22,9 @@
 
 // Peripheral/KEY base address.
 volatile unsigned int *key_ptr = (unsigned int *)0xFF200050;
+// Peripheral/SWITCH base address.
+volatile unsigned int *sw_ptr = (unsigned int *)0xFF200040;
+
 // Store the state of the keys last time we checked.
 unsigned int key_last_state = 0;
 //function to get which key pressed
@@ -50,6 +53,7 @@ int main(void)
 {
 	// file system
 	FILE *fp;
+
 	unsigned int keys_pressed	= 0;			//KEY information
 	unsigned short Data16;
 	unsigned int Data32;
@@ -72,8 +76,9 @@ int main(void)
 
 		//read key value every cycle
 		keys_pressed = getPressedKeys();
-		//check if leftmost key/KEY[3] is pressed
-		if (keys_pressed & 0x8)
+
+		fp = fopen("/Temp/data/data32.txt", "wb");
+		if (*sw_ptr & 0x1)
 		{
 //			Data = JP2_rtData();
 //			Temp = Data & 0x00FF;
@@ -84,16 +89,17 @@ int main(void)
 			if (JP2_RST(Pin[i])) {
 				Data32 = JP2_readByte(Pin[i]);
 				// process, leave 16 bit valid data
-				Data32 &= 0xFF00FF00;
-				Data32 >>= 8;
-				Data32 += (Data32 >> 8);
-				fp = fopen("/data/data.pkl", "wb");
-				fputc(Data16, fp);
-				fclose(fp);
+//				Data32 &= 0xFF00FF00;
+//				Data32 >>= 8;
+//				Data32 += (Data32 >> 8);
+
+				fwrite(&Data32, 4, 1, fp);
+
 			} else printf("stop\n");
 
 		}
 		}
+		fclose(fp);
 //		Temp = Data & 0x00FF;
 //		Humi = (Data & 0xFF00) >> 8;
 //		if (Temp != 0xFF && Humi != 0xFF) {

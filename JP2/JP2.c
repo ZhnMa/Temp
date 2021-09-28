@@ -20,10 +20,6 @@ bool jp2_initialised = false;
 #define JP2_PIO_DIR	 (0x04/sizeof(unsigned int))
 #define JP2_PIO_DATA (0x00/sizeof(unsigned int))		//read data
 
-// whether a priority is allowed
-// 	set this to zero if no priority is needed, might output invalid data
-#define PRIO 1
-
 // initialise
 signed int JP2_initialise(unsigned int pio_base_address)
 {
@@ -144,21 +140,21 @@ unsigned int JP2_readByte(unsigned int pin)
 //		must not be called under other conditions
 // unsigned int pin: define input pin
 //
-unsigned short JP2_16Bits(unsigned int pin, bool deci)
-{
-	unsigned int data = JP2_readByte(pin);
-	if (deci) {
-		if (PRIO) data >>= 16;	// return only temperature with decimals under PRIORITY
-		else return 0xFFFFFFFF;	// no priority allowed, out of range
-	}
-	else {
-		// process, leave 16 bit valid data
-		data &= 0xFF00FF00;
-		data >>= 8;
-		data += (data >> 8);
-	}
-	return data;
-}
+//unsigned short JP2_16Bits(unsigned int pin, bool deci)
+//{
+//	unsigned int data = JP2_readByte(pin);
+//	if (deci) {
+//		if (PRIO) data >>= 16;	// return only temperature with decimals under PRIORITY
+//		else return 0xFFFFFFFF;	// no priority allowed, out of range
+//	}
+//	else {
+//		// process, leave 16 bit valid data
+//		data &= 0xFF00FF00;
+//		data >>= 8;
+//		data += (data >> 8);
+//	}
+//	return data;
+//}
 
 //
 // Scan all the pins

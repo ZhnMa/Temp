@@ -15,11 +15,6 @@
 #include "DE1SoC_SevenSeg/DE1SoC_SevenSeg.h"
 #include "HPS_usleep/HPS_usleep.h"
 
-// define features
-// ToDo: set these to be controlled by switches
-#define BITS 1	// 16 bits
-#define DECI 0	// no decimal points
-
 // Peripheral/KEY base address.
 volatile unsigned int *key_ptr = (unsigned int *)0xFF200050;
 // Peripheral/SWITCH base address.
@@ -37,6 +32,36 @@ unsigned int getPressedKeys() {
     key_last_state = key_current_state;
     // Return result.
     return keys_pressed;
+}
+
+unsigned int config = 0;
+//
+// function to detect changes
+//
+// 0b1111xxx0: decimal points allowed
+// 0b1111xxx1: no decimal points
+// 0b1111xx0x: priority allowed, will be outputs
+// 0b1111xx1x: no priority, outputs might be invalid
+// 0b111100xx: 16 bits data
+// 0x111101xx: 32 bits data
+// 		...
+//
+bool configChanged()
+{
+	unsigned int sw = *sw_ptr;
+	unsigned int newConfig = 0xF0;
+
+	// set configurations
+	if (*sw_ptr & 200) newConfig |= 0xF1;	// ban decimal points
+	if (*sw_ptr & 100) newConfig |= 0xF2;	// ban priority
+	if (*sw_ptr & 80) newConfig |= 0xF4;	// 32 bits
+	// check changes
+	if (newConfig != config)
+	{
+		config = newConfig;		// maintain new configuration
+		return true;
+	}
+	else return false;
 }
 
 //debugging function
@@ -61,6 +86,15 @@ int main(void)
 	unsigned int i = 0;
 	unsigned int Temp = 0;
 	unsigned int Humi = 0;
+
+	// features
+	bool DECI=1, PRIO=1;
+	// define how many bits in one data
+	//		BITS = 1: 16 bits
+	//		BITS = 2: 32 bits
+	//		...
+	unsigned short BITS = 1;
+
 	//initialise JP2
 	exitOnFail(
 			JP2_initialise(0xFF200070),
@@ -80,24 +114,23 @@ int main(void)
 		fp = fopen("/Temp/data/data32.txt", "wb");
 		while (*sw_ptr & 0x1)
 		{
-//			Data = JP2_rtData();
-//			Temp = Data & 0x00FF;
-//			Humi = (Data & 0xFF00) >> 8;
-//			i++;
-//
-		for (i = 0; i < 5; i++) {
-			if (JP2_RST(Pin[i])) {
-				Data32 = JP2_readByte(Pin[i]);
-				// process, leave 16 bit valid data
-//				Data32 &= 0xFF00FF00;
-//				Data32 >>= 8;
-//				Data32 += (Data32 >> 8);
+			if (configChanged) fwrite(&config, 2, 1, fp);
+			// ToDo: detect pin change
+			for (i = 0; i < 5; i++) {
+				if (JP2_RST(Pin[i])) {
+					Data32 = JP2_readByte(Pin[i]);
+					// process, leave 16 bit valid data
+	//				Data32 &= 0xFF00FF00;
+	//				Data32 >>= 8;
+	//				Data32 += (Data32 >> 8);
 
-				fwrite(&Data32, 4, 1, fp);
+					fwrite(&Data32, 4, 1, fp);
 
-			} else printf("stop\n");
-
-		}
+				} else printf("stop\n");
+			}
+		// 2 second delay for sensor(s), when there are a large amount of sensors...
+		//	...this is not needed.
+		usleep(2000000);
 		HPS_ResetWatchdog();
 		}
 		fclose(fp);

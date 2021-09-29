@@ -40,11 +40,10 @@ unsigned short config = 0x00FF;
 //
 // 0b1111xxx0: decimal points allowed
 // 0b1111xxx1: no decimal points
-// 0b1111xx0x: priority allowed, will be outputs
-// 0b1111xx1x: no priority, outputs might be invalid
-// 0b111100xx: 16 bits data
-// 0x111101xx: 32 bits data
+// 0b1111xx0x: 16 bit data
+// 0b1111xx1x: 32 bit data
 // 		...
+//		more bits data need to be added in the code in future
 //
 bool configChanged()
 {
@@ -80,12 +79,12 @@ int main(void)
 	FILE *fp;
 
 	unsigned int keys_pressed	= 0;			//KEY information
-	unsigned short Data16;
-	unsigned int Data32;
+	unsigned int Data;
 	unsigned int Pin[4] = {PIN1, PIN2, PIN3, PIN4};
 	unsigned int i = 0;
 	unsigned int Temp = 0, Humi = 0;
 	unsigned short validPins = 0x00E0;
+	bool isTemp = true;
 
 	//initialise JP2
 	exitOnFail(
@@ -109,19 +108,24 @@ int main(void)
 			unsigned short newPins = 0x00E0;
 			if (configChanged()) fwrite(&config, 1, 1, fp);
 
-			//ToDo: enhance data output under configurations
-			for (i = 0; i < 5; i++) {
+			for (i = 0; i <= sizeof(Pin)/4; i++) {
 				if (JP2_RST(Pin[i])) {
-					Data32 = JP2_readByte(Pin[i]);
-
-
-					// process, leave 16 bit valid data
-	//				Data32 &= 0xFF00FF00;
-	//				Data32 >>= 8;
-	//				Data32 += (Data32 >> 8);
+					Data = JP2_readByte(Pin[i]);
+					// process
+					if (config & 0xF2) fwrite(&Data, 4, 1, fp); // 32 bits
+					else {										// 16 bits
+						if (config & 0xF1)	// no decimal points, maintain both temp and humi
+						{
+							Data &= 0xFF00FF00;
+							Data >>= 8;
+							Data += (Data >> 8);
+						} else {			// decimal points, outputs temp and humi individually
+							if (isTemp) Data >>= 16;
+							else Data &= 0x0000FFFF;
+						}
+					}
 					newPins |= (1 << i);
-					fwrite(&Data32, 4, 1, fp);
-
+					fwrite(&Data, 2, 1, fp);	// write 2 bytes
 				} else printf("stop\n");
 			}
 			// check and update pin change
@@ -130,6 +134,8 @@ int main(void)
 					fwrite(&newPins, 1, 1, fp);
 					validPins = newPins;
 				}
+			// toggle between temperature and humidity
+			isTemp = ~isTemp;
 			// 2 second delay for sensor(s), when there are a large amount of sensors...
 			//	...this is not needed.
 			usleep(2000000);

@@ -34,7 +34,7 @@ unsigned int getPressedKeys() {
     return keys_pressed;
 }
 
-unsigned int config = 0;
+unsigned short config = 0x00FF;
 //
 // function to detect changes
 //
@@ -49,12 +49,12 @@ unsigned int config = 0;
 bool configChanged()
 {
 	unsigned int sw = *sw_ptr;
-	unsigned int newConfig = 0xF0;
+	unsigned short newConfig = 0x00F0;
 
 	// set configurations
-	if (*sw_ptr & 200) newConfig |= 0xF1;	// ban decimal points
-	if (*sw_ptr & 100) newConfig |= 0xF2;	// ban priority
-	if (*sw_ptr & 80) newConfig |= 0xF4;	// 32 bits
+	if (*sw_ptr & 200) newConfig |= 0x00F1;	// ban decimal points
+	if (*sw_ptr & 100) newConfig |= 0x00F2;	// ban priority
+	if (*sw_ptr & 80) newConfig |= 0x00F4;	// 32 bits
 	// check changes
 	if (newConfig != config)
 	{
@@ -84,16 +84,8 @@ int main(void)
 	unsigned int Data32;
 	unsigned int Pin[4] = {PIN1, PIN2, PIN3, PIN4};
 	unsigned int i = 0;
-	unsigned int Temp = 0;
-	unsigned int Humi = 0;
-
-	// features
-	bool DECI=1, PRIO=1;
-	// define how many bits in one data
-	//		BITS = 1: 16 bits
-	//		BITS = 2: 32 bits
-	//		...
-	unsigned short BITS = 1;
+	unsigned int Temp = 0, Humi = 0;
+	unsigned short validPins = 0x00E0;
 
 	//initialise JP2
 	exitOnFail(
@@ -114,24 +106,34 @@ int main(void)
 		fp = fopen("/Temp/data/data32.txt", "wb");
 		while (*sw_ptr & 0x1)
 		{
-			if (configChanged) fwrite(&config, 2, 1, fp);
-			// ToDo: detect pin change
+			unsigned short newPins = 0x00E0;
+			if (configChanged()) fwrite(&config, 1, 1, fp);
+
+			//ToDo: enhance data output under configurations
 			for (i = 0; i < 5; i++) {
 				if (JP2_RST(Pin[i])) {
 					Data32 = JP2_readByte(Pin[i]);
+
+
 					// process, leave 16 bit valid data
 	//				Data32 &= 0xFF00FF00;
 	//				Data32 >>= 8;
 	//				Data32 += (Data32 >> 8);
-
+					newPins |= (1 << i);
 					fwrite(&Data32, 4, 1, fp);
 
 				} else printf("stop\n");
 			}
-		// 2 second delay for sensor(s), when there are a large amount of sensors...
-		//	...this is not needed.
-		usleep(2000000);
-		HPS_ResetWatchdog();
+			// check and update pin change
+			if (newPins != validPins)
+				{
+					fwrite(&newPins, 1, 1, fp);
+					validPins = newPins;
+				}
+			// 2 second delay for sensor(s), when there are a large amount of sensors...
+			//	...this is not needed.
+			usleep(2000000);
+			HPS_ResetWatchdog();
 		}
 		fclose(fp);
 //		Temp = Data & 0x00FF;

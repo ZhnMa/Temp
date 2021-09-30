@@ -32,25 +32,3 @@ signed int JP2_RST(unsigned int pin);
 
 // read one byte data
 unsigned int JP2_readByte(unsigned int pin);
-
-//
-// read real time data
-//
-unsigned int JP2_rtData(unsigned int pin);
-
-//
-// Scan all the pins
-// get valid data further process
-//
-// unsigned int bits: define how many bits of data to return
-// 						1 - 16 bits
-//						2 - 32 bits
-//
-//unsigned int JP2_fullScan(unsigned short bits);
-
-//
-// function designed to deal with 16 bit output only
-//		must not be called under other conditions
-// unsigned int pin: define input pin
-//
-unsigned short JP2_16Bits(unsigned int pin, bool deci);

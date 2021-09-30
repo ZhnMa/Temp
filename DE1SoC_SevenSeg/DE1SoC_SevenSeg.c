@@ -3,13 +3,14 @@
  *
  *  Created on: 12 Feb 2021
  *      Author: Harry Clegg
- *      		You!
+ *
+ *  Modified and completed by: Zhaonan Ma
  *-----------------------------------------
  *	From earlier tasks.
- *	Copied and pasted for Mini-Project.
+ *	Copied and pasted for Individual Project
  *		By: Zhaonan Ma [el20z2m], SID: 201397999
  *
- *	2021-5-7
+ *	2021-9-30
  */
 
 #include "DE1SoC_SevenSeg.h"

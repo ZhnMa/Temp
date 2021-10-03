@@ -105,6 +105,7 @@ int main(void)
 						Data >>= 8;
 						Data += (Data >> 8);
 					} else {			// decimal points, outputs temp and humi individually
+						// could face mal-position problem and needs to be run even times
 						if (isTemp) Data &= 0x0000FFFF;
 						else Data >>= 16;
 					}
@@ -112,7 +113,7 @@ int main(void)
 				}
 				newPins |= (1 << i);
 			}
-			printf("stop\n");
+			printf("finished one pin\n");
 		}
 		// check and update pin change
 		if (newPins != validPins)

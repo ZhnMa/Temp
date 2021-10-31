@@ -88,7 +88,7 @@ int main(void)
 		unsigned short newPins = 0x00E0;
 		if (configChanged()) fwrite(&config, 1, 1, fp);
 		// scan all pins and read values
-		for (i = 0; i <= sizeof(Pin)/4; i++) {
+		for (i = 0; i < sizeof(Pin)/4; i++) {
 			if (JP2_RST(Pin[i])) {
 				Data = JP2_readByte(Pin[i]);
 				// display on segments
